@@ -61,9 +61,22 @@ const SHOGI_BOARD_BOT_GEO = new THREE.PolyhedronGeometry(
 SHOGI_BOARD_BOT_GEO.computeBoundingBox();
 SHOGI_BOARD_BOT_GEO.center();
 
+// -------------------------
+// Shogi Stand
+// -------------------------
+const SHOGI_STAND_PLANE_GEO = new THREE.BoxGeometry(20, 2, 20);
+SHOGI_STAND_PLANE_GEO.computeBoundingBox();
+SHOGI_STAND_PLANE_GEO.center();
+
+const SHOGI_STAND_POLE_GEO = new THREE.BoxGeometry(5, 49, 5);
+SHOGI_STAND_POLE_GEO.computeBoundingBox();
+SHOGI_STAND_POLE_GEO.center();
+
 export {
   SHOGI_PIECE_GEO,
   SHOGI_BOARD_BOX_GEO,
   SHOGI_BOARD_LEG_GEO,
   SHOGI_BOARD_BOT_GEO,
+  SHOGI_STAND_PLANE_GEO,
+  SHOGI_STAND_POLE_GEO,
 };
