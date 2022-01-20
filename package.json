@@ -1,0 +1,28 @@
+{
+  "name": "proyectograficas",
+  "version": "1.0.0",
+  "description": "Proyecto final de Gráficas computacionales. Invierno 2022.",
+  "main": "index.js",
+  "dependencies": {
+    "three": "^0.136.0"
+  },
+  "devDependencies": {
+    "five-server": "^0.1.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Angel-AG/ProyectoGraficas.git"
+  },
+  "keywords": [
+    "three.js",
+    "computer-graphics"
+  ],
+  "author": "Angel Guevara",
+  "bugs": {
+    "url": "https://github.com/Angel-AG/ProyectoGraficas/issues"
+  },
+  "homepage": "https://github.com/Angel-AG/ProyectoGraficas#readme"
+}
