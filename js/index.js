@@ -4,10 +4,12 @@ import {
   SHOGI_BOARD_BOX_GEO,
   SHOGI_BOARD_LEG_GEO,
   SHOGI_BOARD_BOT_GEO,
+  SHOGI_STAND_PLANE_GEO,
+  SHOGI_STAND_POLE_GEO,
 } from './ShogiGeos.js';
 
 let scene, camera, renderer, controls;
-let shogiBoard;
+let shogiBoard, shogiStandSente, shogiStandGote;
 
 // TODO: Create final materials
 const material = new THREE.MeshBasicMaterial({ color: 0xfef9bc });
@@ -38,6 +40,7 @@ function init() {
 
   createFloor();
   createShogiBoard();
+  createShogiStands();
 
   camera.position.set(0, 20, 150);
 
@@ -148,6 +151,64 @@ function createShogiBoard() {
   shogiBoard.add(shogiBoardBotRightFront);
 
   scene.add(shogiBoard);
+}
+
+function createShogiStands() {
+  const shogiStandTop = new THREE.Mesh(SHOGI_STAND_PLANE_GEO, material2);
+  shogiStandTop.applyMatrix4(
+    translateMatrix(
+      0,
+      2 * SHOGI_STAND_PLANE_GEO.boundingBox.min.y +
+        SHOGI_BOARD_BOX_GEO.boundingBox.max.y -
+        SHOGI_BOARD_BOX_GEO.boundingBox.min.y +
+        SHOGI_BOARD_LEG_GEO.boundingBox.max.y -
+        SHOGI_BOARD_LEG_GEO.boundingBox.min.y +
+        1.5 * SHOGI_BOARD_BOT_GEO.boundingBox.max.y,
+      0
+    )
+  );
+
+  const shogiStandMid = new THREE.Mesh(SHOGI_STAND_POLE_GEO, material3);
+  shogiStandMid.applyMatrix4(
+    translateMatrix(
+      0,
+      SHOGI_STAND_POLE_GEO.boundingBox.min.y +
+        2 * SHOGI_STAND_PLANE_GEO.boundingBox.min.y +
+        SHOGI_BOARD_BOX_GEO.boundingBox.max.y -
+        SHOGI_BOARD_BOX_GEO.boundingBox.min.y +
+        SHOGI_BOARD_LEG_GEO.boundingBox.max.y -
+        SHOGI_BOARD_LEG_GEO.boundingBox.min.y +
+        1.5 * SHOGI_BOARD_BOT_GEO.boundingBox.max.y,
+      0
+    )
+  );
+
+  const shogiStandBot = new THREE.Mesh(SHOGI_STAND_PLANE_GEO, material2);
+  shogiStandBot.applyMatrix4(
+    translateMatrix(0, SHOGI_STAND_PLANE_GEO.boundingBox.max.y, 0)
+  );
+
+  shogiStandSente = new THREE.Group();
+
+  shogiStandSente.add(shogiStandTop);
+  shogiStandSente.add(shogiStandMid);
+  shogiStandSente.add(shogiStandBot);
+
+  shogiStandSente.applyMatrix4(
+    translateMatrix(
+      SHOGI_STAND_PLANE_GEO.boundingBox.max.x +
+        1.05 * SHOGI_BOARD_BOX_GEO.boundingBox.max.x,
+      0,
+      SHOGI_STAND_PLANE_GEO.boundingBox.min.z +
+        SHOGI_BOARD_BOX_GEO.boundingBox.max.z
+    )
+  );
+
+  shogiStandGote = shogiStandSente.clone();
+  shogiStandGote.applyMatrix4(reflectMatrix(-1, 1, -1));
+
+  scene.add(shogiStandSente);
+  scene.add(shogiStandGote);
 }
 
 function animate() {
