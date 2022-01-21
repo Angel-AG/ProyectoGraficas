@@ -1,6 +1,7 @@
 import * as THREE from './three.js';
 import { OrbitControls } from './OrbitControls.js';
 import {
+  SHOGI_PIECE_GEO,
   SHOGI_BOARD_BOX_GEO,
   SHOGI_BOARD_LEG_GEO,
   SHOGI_BOARD_BOT_GEO,
@@ -10,6 +11,14 @@ import {
 
 let scene, camera, renderer, controls;
 let shogiBoard, shogiStandSente, shogiStandGote;
+
+const BOARD_XZ = [];
+for (let i = 0, startZ = 28; i < 9; ++i, startZ -= 7) {
+  BOARD_XZ.push([]);
+  for (let j = 0, startX = -28; j < 9; ++j, startX += 7) {
+    BOARD_XZ[i].push({ x: startX, z: startZ });
+  }
+}
 
 // TODO: Create final materials
 const material = new THREE.MeshBasicMaterial({ color: 0xfef9bc });
@@ -41,6 +50,7 @@ function init() {
   createFloor();
   createShogiBoard();
   createShogiStands();
+  movePiecesToInitialPos();
 
   camera.position.set(0, 20, 150);
 
@@ -151,6 +161,150 @@ function createShogiBoard() {
   shogiBoard.add(shogiBoardBotRightFront);
 
   scene.add(shogiBoard);
+}
+
+function createShogiPiece() {
+  const shogiPiece = new THREE.Mesh(SHOGI_PIECE_GEO, material3);
+  shogiPiece.applyMatrix4(
+    translateMatrix(
+      0,
+      SHOGI_PIECE_GEO.boundingBox.max.z +
+        SHOGI_BOARD_BOX_GEO.boundingBox.max.y -
+        SHOGI_BOARD_BOX_GEO.boundingBox.min.y +
+        SHOGI_BOARD_LEG_GEO.boundingBox.max.y -
+        SHOGI_BOARD_LEG_GEO.boundingBox.min.y +
+        1.5 * SHOGI_BOARD_BOT_GEO.boundingBox.max.y,
+      0
+    )
+  );
+  shogiPiece.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+
+  return shogiPiece;
+}
+
+// TODO: Clean and add different scale for each type of piece
+function movePiecesToInitialPos() {
+  // Pawns
+  for (let i = 0; i < 9; ++i) {
+    const shogiPiece = createShogiPiece();
+    shogiPiece.position.set(
+      BOARD_XZ[2][i].x,
+      shogiPiece.position.y,
+      BOARD_XZ[2][i].z
+    );
+
+    const shogiPieceOpp = shogiPiece.clone();
+    shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
+
+    scene.add(shogiPiece);
+    scene.add(shogiPieceOpp);
+  }
+
+  // Rook
+  let shogiPiece = createShogiPiece();
+  shogiPiece.position.set(
+    BOARD_XZ[1][1].x,
+    shogiPiece.position.y,
+    BOARD_XZ[1][1].z
+  );
+
+  let shogiPieceOpp = shogiPiece.clone();
+  shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
+
+  scene.add(shogiPiece);
+  scene.add(shogiPieceOpp);
+
+  // Bishop
+  shogiPiece = createShogiPiece();
+  shogiPiece.position.set(
+    BOARD_XZ[1][7].x,
+    shogiPiece.position.y,
+    BOARD_XZ[1][7].z
+  );
+
+  shogiPieceOpp = shogiPiece.clone();
+  shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
+
+  scene.add(shogiPiece);
+  scene.add(shogiPieceOpp);
+
+  // Lances
+  for (let i = 0; i < 2; i++) {
+    shogiPiece = createShogiPiece();
+    shogiPiece.position.set(
+      BOARD_XZ[0][0 + i * 8].x,
+      shogiPiece.position.y,
+      BOARD_XZ[0][0 + i * 8].z
+    );
+
+    shogiPieceOpp = shogiPiece.clone();
+    shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
+
+    scene.add(shogiPiece);
+    scene.add(shogiPieceOpp);
+  }
+
+  // Knights
+  for (let i = 0; i < 2; i++) {
+    shogiPiece = createShogiPiece();
+    shogiPiece.position.set(
+      BOARD_XZ[0][1 + i * 6].x,
+      shogiPiece.position.y,
+      BOARD_XZ[0][1 + i * 6].z
+    );
+
+    shogiPieceOpp = shogiPiece.clone();
+    shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
+
+    scene.add(shogiPiece);
+    scene.add(shogiPieceOpp);
+  }
+
+  // Silver
+  for (let i = 0; i < 2; i++) {
+    shogiPiece = createShogiPiece();
+    shogiPiece.position.set(
+      BOARD_XZ[0][2 + i * 4].x,
+      shogiPiece.position.y,
+      BOARD_XZ[0][2 + i * 4].z
+    );
+
+    shogiPieceOpp = shogiPiece.clone();
+    shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
+
+    scene.add(shogiPiece);
+    scene.add(shogiPieceOpp);
+  }
+
+  // Gold
+  for (let i = 0; i < 2; i++) {
+    shogiPiece = createShogiPiece();
+    shogiPiece.position.set(
+      BOARD_XZ[0][3 + i * 2].x,
+      shogiPiece.position.y,
+      BOARD_XZ[0][3 + i * 2].z
+    );
+
+    shogiPieceOpp = shogiPiece.clone();
+    shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
+
+    scene.add(shogiPiece);
+    scene.add(shogiPieceOpp);
+  }
+
+  // Kings
+  shogiPiece = createShogiPiece();
+  shogiPiece.position.set(
+    BOARD_XZ[0][4].x,
+    shogiPiece.position.y,
+    BOARD_XZ[0][4].z
+  );
+
+  shogiPieceOpp = shogiPiece.clone();
+  shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
+
+  scene.add(shogiPiece);
+  scene.add(shogiPieceOpp);
 }
 
 function createShogiStands() {
