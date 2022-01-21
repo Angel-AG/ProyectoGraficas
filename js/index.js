@@ -21,7 +21,7 @@ for (let i = 0, startZ = 28; i < 9; ++i, startZ -= 7) {
 }
 
 // TODO: Create final materials
-const material = new THREE.MeshBasicMaterial({ color: 0xfef9bc });
+const material = new THREE.MeshBasicMaterial({ color: 0xb5854f });
 const material2 = new THREE.MeshBasicMaterial({ color: 0x724109 });
 const material3 = new THREE.MeshBasicMaterial({ color: 0xfbe7d0 });
 
