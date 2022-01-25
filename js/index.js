@@ -8,6 +8,7 @@ import {
   SHOGI_STAND_PLANE_GEO,
   SHOGI_STAND_POLE_GEO,
 } from './ShogiGeos.js';
+import { WOOD_MAT, DARK_WOOD_MAT, LIGHT_WOOD_MAT } from './ShogiMaterials.js';
 
 let scene, camera, renderer, controls;
 let shogiBoard, shogiStandSente, shogiStandGote;
@@ -19,11 +20,6 @@ for (let i = 0, startZ = 28; i < 9; ++i, startZ -= 7) {
     BOARD_XZ[i].push({ x: startX, z: startZ });
   }
 }
-
-// TODO: Create final materials
-const material = new THREE.MeshBasicMaterial({ color: 0xb5854f });
-const material2 = new THREE.MeshBasicMaterial({ color: 0x724109 });
-const material3 = new THREE.MeshBasicMaterial({ color: 0xfbe7d0 });
 
 init();
 animate();
@@ -93,7 +89,7 @@ function createFloor() {
 }
 
 function createShogiBoard() {
-  const shogiBoardBox = new THREE.Mesh(SHOGI_BOARD_BOX_GEO, material);
+  const shogiBoardBox = new THREE.Mesh(SHOGI_BOARD_BOX_GEO, WOOD_MAT);
   shogiBoardBox.applyMatrix4(
     translateMatrix(
       0,
@@ -105,7 +101,10 @@ function createShogiBoard() {
     )
   );
 
-  const shogiBoardLegLeftBack = new THREE.Mesh(SHOGI_BOARD_LEG_GEO, material2);
+  const shogiBoardLegLeftBack = new THREE.Mesh(
+    SHOGI_BOARD_LEG_GEO,
+    LIGHT_WOOD_MAT
+  );
   shogiBoardLegLeftBack.applyMatrix4(
     translateMatrix(
       SHOGI_BOARD_BOX_GEO.boundingBox.min.x +
@@ -126,7 +125,10 @@ function createShogiBoard() {
   const shogiBoardLegRightFront = shogiBoardLegLeftBack.clone();
   shogiBoardLegRightFront.applyMatrix4(reflectMatrix(-1, 1, -1));
 
-  const shogiBoardBotLeftBack = new THREE.Mesh(SHOGI_BOARD_BOT_GEO, material3);
+  const shogiBoardBotLeftBack = new THREE.Mesh(
+    SHOGI_BOARD_BOT_GEO,
+    DARK_WOOD_MAT
+  );
   shogiBoardBotLeftBack.applyMatrix4(
     translateMatrix(
       SHOGI_BOARD_BOX_GEO.boundingBox.min.x +
@@ -164,7 +166,7 @@ function createShogiBoard() {
 }
 
 function createShogiPiece() {
-  const shogiPiece = new THREE.Mesh(SHOGI_PIECE_GEO, material3);
+  const shogiPiece = new THREE.Mesh(SHOGI_PIECE_GEO, LIGHT_WOOD_MAT);
   shogiPiece.applyMatrix4(
     translateMatrix(
       0,
@@ -308,7 +310,7 @@ function movePiecesToInitialPos() {
 }
 
 function createShogiStands() {
-  const shogiStandTop = new THREE.Mesh(SHOGI_STAND_PLANE_GEO, material2);
+  const shogiStandTop = new THREE.Mesh(SHOGI_STAND_PLANE_GEO, DARK_WOOD_MAT);
   shogiStandTop.applyMatrix4(
     translateMatrix(
       0,
@@ -322,7 +324,7 @@ function createShogiStands() {
     )
   );
 
-  const shogiStandMid = new THREE.Mesh(SHOGI_STAND_POLE_GEO, material3);
+  const shogiStandMid = new THREE.Mesh(SHOGI_STAND_POLE_GEO, LIGHT_WOOD_MAT);
   shogiStandMid.applyMatrix4(
     translateMatrix(
       0,
@@ -337,7 +339,7 @@ function createShogiStands() {
     )
   );
 
-  const shogiStandBot = new THREE.Mesh(SHOGI_STAND_PLANE_GEO, material2);
+  const shogiStandBot = new THREE.Mesh(SHOGI_STAND_PLANE_GEO, DARK_WOOD_MAT);
   shogiStandBot.applyMatrix4(
     translateMatrix(0, SHOGI_STAND_PLANE_GEO.boundingBox.max.y, 0)
   );
