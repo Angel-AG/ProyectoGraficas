@@ -22,6 +22,7 @@ const PIECE_SCALE_XL = 1 + SCALE_FACTOR;
 
 let scene, camera, renderer, controls;
 let shogiBoard, shogiStandSente, shogiStandGote;
+let ambientLight, pointLight;
 
 // X and Z coordinates for each square of the board
 const BOARD_XZ = [];
@@ -37,16 +38,19 @@ animate();
 
 function init() {
   scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87ceeb);
   camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
     0.1,
-    1000
+    1500
   );
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.antialias = true;
   document.body.appendChild(renderer.domElement);
 
   controls = new OrbitControls(camera, renderer.domElement);
@@ -55,7 +59,26 @@ function init() {
   const axesHelper = new THREE.AxesHelper(5);
   scene.add(axesHelper);
 
+  // Lights
+  ambientLight = new THREE.AmbientLight(0x909090);
+  pointLight = new THREE.PointLight(0xf0f0f0, 1, 350, 2);
+  pointLight.position.set(0, 150, 0);
+  pointLight.castShadow = true;
+  pointLight.shadow.mapSize.width = 1536;
+  pointLight.shadow.mapSize.height = 1536;
+  pointLight.shadow.camera.far = 150;
+  scene.add(ambientLight);
+  scene.add(pointLight);
+
+  // TODO: Remove helper
+  const sphereSize = 1;
+  const pointLightHelper = new THREE.PointLightHelper(pointLight, sphereSize);
+  scene.add(pointLightHelper);
+  const helper = new THREE.CameraHelper(pointLight.shadow.camera);
+  scene.add(helper);
+
   addFloor();
+  addSky();
   addShogiBoard();
   addShogiStands();
   addShogiPieces();
@@ -75,13 +98,26 @@ function onWindowResize() {
 }
 
 function addFloor() {
-  const geometry = new THREE.PlaneGeometry(150, 150);
-  const material = new THREE.MeshBasicMaterial({ color: 0xfffffff });
+  const geometry = new THREE.PlaneGeometry(1000, 1000);
+  const material = new THREE.MeshStandardMaterial({ color: 0x85e085 });
   const plane = new THREE.Mesh(geometry, material);
 
   plane.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+  plane.receiveShadow = true;
 
   scene.add(plane);
+}
+
+function addSky() {
+  const geometry = new THREE.SphereGeometry(500, 32, 15);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x87ceeb,
+    side: THREE.BackSide,
+  });
+
+  const sky = new THREE.Mesh(geometry, material);
+
+  scene.add(sky);
 }
 
 function addShogiBoard() {
@@ -99,6 +135,8 @@ function addShogiBoard() {
       0
     )
   );
+  shogiBoardBox.castShadow = true;
+  shogiBoardBox.receiveShadow = true;
   shogiBoard.add(shogiBoardBox);
 
   const XZ_QUADRANTS = [1, 1, -1, -1];
@@ -137,7 +175,12 @@ function addShogiBoard() {
       )
     );
 
+    shogiBoardLeg.castShadow = true;
+    shogiBoardLeg.receiveShadow = true;
     shogiBoard.add(shogiBoardLeg);
+
+    shogiBoardBot.castShadow = true;
+    shogiBoardBot.receiveShadow = true;
     shogiBoard.add(shogiBoardBot);
   }
 
@@ -159,6 +202,8 @@ function createShogiPiece() {
     )
   );
   shogiPiece.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+  shogiPiece.castShadow = true;
+  shogiPiece.receiveShadow = true;
 
   return shogiPiece;
 }
@@ -309,6 +354,8 @@ function addShogiStands() {
       0
     )
   );
+  shogiStandTop.castShadow = true;
+  shogiStandTop.receiveShadow = true;
 
   const shogiStandMid = new THREE.Mesh(SHOGI_STAND_POLE_GEO, LIGHT_WOOD_MAT);
   shogiStandMid.applyMatrix4(
@@ -324,11 +371,15 @@ function addShogiStands() {
       0
     )
   );
+  shogiStandMid.castShadow = true;
+  shogiStandMid.receiveShadow = true;
 
   const shogiStandBot = new THREE.Mesh(SHOGI_STAND_PLANE_GEO, DARK_WOOD_MAT);
   shogiStandBot.applyMatrix4(
     translateMatrix(0, SHOGI_STAND_PLANE_GEO.boundingBox.max.y, 0)
   );
+  shogiStandBot.castShadow = true;
+  shogiStandBot.receiveShadow = true;
 
   shogiStandSente = new THREE.Group();
 
@@ -339,7 +390,7 @@ function addShogiStands() {
   shogiStandSente.applyMatrix4(
     translateMatrix(
       SHOGI_STAND_PLANE_GEO.boundingBox.max.x +
-        1.05 * SHOGI_BOARD_BOX_GEO.boundingBox.max.x,
+        1.1 * SHOGI_BOARD_BOX_GEO.boundingBox.max.x,
       0,
       SHOGI_STAND_PLANE_GEO.boundingBox.min.z +
         SHOGI_BOARD_BOX_GEO.boundingBox.max.z
