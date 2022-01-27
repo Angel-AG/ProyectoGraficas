@@ -9,6 +9,11 @@ import {
   SHOGI_STAND_POLE_GEO,
 } from './ShogiGeos.js';
 import { WOOD_MAT, DARK_WOOD_MAT, LIGHT_WOOD_MAT } from './ShogiMaterials.js';
+import {
+  translateMatrix,
+  scaleMatrix,
+  reflectMatrix,
+} from './helperMatrix4.js';
 
 const SCALE_FACTOR = 0.25;
 const PIECE_SCALE_M = 1 + SCALE_FACTOR / 3;
@@ -67,32 +72,6 @@ function onWindowResize() {
   camera.updateProjectionMatrix();
 
   renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-// Return a scale matrix
-function scaleMatrix(x, y, z) {
-  let mat = new THREE.Matrix4();
-  mat.makeScale(x, y, z);
-
-  return mat;
-}
-
-// Return a translation matrix
-function translateMatrix(x, y, z) {
-  let mat = new THREE.Matrix4();
-  mat.makeTranslation(x, y, z);
-
-  return mat;
-}
-
-// Return a reflection matrix
-function reflectMatrix(x, y, z) {
-  let mat = new THREE.Matrix4();
-  mat.elements[0] = x;
-  mat.elements[5] = y;
-  mat.elements[10] = z;
-
-  return mat;
 }
 
 function addFloor() {
