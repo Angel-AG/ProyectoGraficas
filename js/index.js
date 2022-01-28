@@ -8,7 +8,13 @@ import {
   SHOGI_STAND_PLANE_GEO,
   SHOGI_STAND_POLE_GEO,
 } from './ShogiGeos.js';
-import { WOOD_MAT, DARK_WOOD_MAT, LIGHT_WOOD_MAT } from './ShogiMaterials.js';
+import {
+  SHOGI_BOARD_MATS,
+  SKY_MAT,
+  GRASS_MAT,
+  DARK_WOOD_MAT,
+  LIGHT_WOOD_MAT,
+} from './ShogiMaterials.js';
 import {
   translateMatrix,
   scaleMatrix,
@@ -21,6 +27,7 @@ const PIECE_SCALE_L = 1 + (2 * SCALE_FACTOR) / 3;
 const PIECE_SCALE_XL = 1 + SCALE_FACTOR;
 
 let scene, camera, renderer, controls;
+let sky;
 let shogiBoard, shogiStandSente, shogiStandGote;
 let ambientLight, pointLight;
 
@@ -83,7 +90,7 @@ function init() {
   addShogiStands();
   addShogiPieces();
 
-  camera.position.set(0, 20, 150);
+  camera.position.set(-60, 90, 80);
 
   //
 
@@ -98,9 +105,8 @@ function onWindowResize() {
 }
 
 function addFloor() {
-  const geometry = new THREE.PlaneGeometry(1000, 1000);
-  const material = new THREE.MeshStandardMaterial({ color: 0x85e085 });
-  const plane = new THREE.Mesh(geometry, material);
+  const geometry = new THREE.CircleGeometry(500, 32);
+  const plane = new THREE.Mesh(geometry, GRASS_MAT);
 
   plane.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
   plane.receiveShadow = true;
@@ -109,13 +115,17 @@ function addFloor() {
 }
 
 function addSky() {
-  const geometry = new THREE.SphereGeometry(500, 32, 15);
-  const material = new THREE.MeshBasicMaterial({
-    color: 0x87ceeb,
-    side: THREE.BackSide,
-  });
+  const geometry = new THREE.SphereGeometry(
+    500, // radius
+    32, // widthSegments
+    32, // heightSegments
+    0, // phiStart
+    Math.PI * 2, // phiLength
+    0, // thetaStart
+    Math.PI / 2 // thetaLength
+  );
 
-  const sky = new THREE.Mesh(geometry, material);
+  sky = new THREE.Mesh(geometry, SKY_MAT);
 
   scene.add(sky);
 }
@@ -124,7 +134,7 @@ function addShogiBoard() {
   shogiBoard = new THREE.Group();
 
   // Upper part of the board
-  const shogiBoardBox = new THREE.Mesh(SHOGI_BOARD_BOX_GEO, WOOD_MAT);
+  const shogiBoardBox = new THREE.Mesh(SHOGI_BOARD_BOX_GEO, SHOGI_BOARD_MATS);
   shogiBoardBox.applyMatrix4(
     translateMatrix(
       0,
@@ -406,6 +416,8 @@ function addShogiStands() {
 
 function animate() {
   requestAnimationFrame(animate);
+
+  sky.rotation.y += 0.0015;
 
   controls.update();
 
