@@ -1,4 +1,4 @@
-import * as THREE from './three.js';
+import * as THREE from '../three/three.js';
 
 // Return a scale matrix
 export function scaleMatrix(x, y, z) {
