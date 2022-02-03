@@ -50,10 +50,6 @@ function init() {
 
   controls = new OrbitControls(camera, renderer.domElement);
 
-  // TODO: Remove helper
-  const axesHelper = new THREE.AxesHelper(5);
-  scene.add(axesHelper);
-
   // Lights
   ambientLight = new THREE.AmbientLight(0x909090);
   pointLight = new THREE.PointLight(0xf0f0f0, 1, 350, 2);
@@ -65,19 +61,14 @@ function init() {
   scene.add(ambientLight);
   scene.add(pointLight);
 
-  // TODO: Remove helper
-  const sphereSize = 1;
-  const pointLightHelper = new THREE.PointLightHelper(pointLight, sphereSize);
-  scene.add(pointLightHelper);
-  const helper = new THREE.CameraHelper(pointLight.shadow.camera);
-  scene.add(helper);
-
   addFloor();
   addSky();
   shogiBoard = createBoard();
   scene.add(shogiBoard);
   addShogiStands();
   addShogiPieces();
+
+  clock = new THREE.Clock();
 
   camera.position.set(-60, 90, 80);
 
@@ -100,7 +91,350 @@ function onClick(event) {
 
   const intersects = raycaster.intersectObjects(PIECES, false);
   if (intersects.length > 0) {
-    console.log(intersects[0].object.name);
+    PIECES.forEach((element) => {
+      if (element != intersects[0].object) {
+        element.layers.set(1);
+      }
+    });
+
+    let oppPiece = 1;
+    if (intersects[0].object.rotation.x < 0) {
+      oppPiece = -1;
+    }
+
+    const initYPos = intersects[0].object.position.y;
+    let moves, clip, clipAction;
+    switch (intersects[0].object.name) {
+      case PAWN.name:
+        moves = new THREE.VectorKeyframeTrack(
+          '.position',
+          [0.5, 1.5, 2, 3],
+          [
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+          ]
+        );
+
+        clip = new THREE.AnimationClip('Action', 3.5, [moves]);
+        break;
+      case LANCE.name:
+        moves = new THREE.VectorKeyframeTrack(
+          '.position',
+          [0.5, 1.5, 2, 3],
+          [
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 4][4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 4][4].z,
+            BOARD_COORDS[4 + oppPiece * 4][4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 4][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+          ]
+        );
+
+        clip = new THREE.AnimationClip('Action', 3.5, [moves]);
+        break;
+      case KNIGHT.name:
+        moves = new THREE.VectorKeyframeTrack(
+          '.position',
+          [0.5, 1.5, 2.5, 3, 3.5, 4, 5, 6, 6.5, 7],
+          [
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4][4].x + oppPiece * 2.5,
+            initYPos + 10,
+            BOARD_COORDS[4][4].z - oppPiece * 5,
+            BOARD_COORDS[4 + oppPiece * 2][4 + oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 2][4 + oppPiece * 1].z,
+            BOARD_COORDS[4 + oppPiece * 2][4 + oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 2][4 + oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4][4].x - oppPiece * 2.5,
+            initYPos + 10,
+            BOARD_COORDS[4][4].z - oppPiece * 5,
+            BOARD_COORDS[4 + oppPiece * 2][4 - oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 2][4 - oppPiece * 1].z,
+            BOARD_COORDS[4 + oppPiece * 2][4 - oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 2][4 - oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+          ]
+        );
+
+        clip = new THREE.AnimationClip('Action', 7.5, [moves]);
+        break;
+      case SILVER.name:
+        moves = new THREE.VectorKeyframeTrack(
+          '.position',
+          [0.5, 1.5, 2, 3, 3.5, 4.5, 5, 6, 6.5, 7.5, 8],
+          [
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4 - oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4 - oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4 + oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4 + oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 - oppPiece * 1][4 - oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 - oppPiece * 1][4 - oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 - oppPiece * 1][4 + oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 - oppPiece * 1][4 + oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+          ]
+        );
+
+        clip = new THREE.AnimationClip('Action', 8.5, [moves]);
+        break;
+      case GOLD.name:
+        moves = new THREE.VectorKeyframeTrack(
+          '.position',
+          [0.5, 1.5, 2, 3, 3.5, 4.5, 5, 6, 6.5, 7.5, 8, 9, 9.5],
+          [
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4 - oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4 - oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4 + oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4 + oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4][4 - oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4][4 - oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4][4 + oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4][4 + oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 - oppPiece * 1][4].x,
+            initYPos,
+            BOARD_COORDS[4 - oppPiece * 1][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+          ]
+        );
+
+        clip = new THREE.AnimationClip('Action', 10, [moves]);
+        break;
+      case BISHOP.name:
+        moves = new THREE.VectorKeyframeTrack(
+          '.position',
+          [0.5, 2, 3, 4.5, 5.5, 7, 8, 9.5, 10.5],
+          [
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 4][4 - oppPiece * 4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 4][4 - oppPiece * 4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 4][4 + oppPiece * 4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 4][4 + oppPiece * 4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 - oppPiece * 4][4 - oppPiece * 4].x,
+            initYPos,
+            BOARD_COORDS[4 - oppPiece * 4][4 - oppPiece * 4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 - oppPiece * 4][4 + oppPiece * 4].x,
+            initYPos,
+            BOARD_COORDS[4 - oppPiece * 4][4 + oppPiece * 4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+          ]
+        );
+
+        clip = new THREE.AnimationClip('Action', 11, [moves]);
+        break;
+      case ROOK.name:
+        moves = new THREE.VectorKeyframeTrack(
+          '.position',
+          [0.5, 2, 3, 4.5, 5.5, 7, 8, 9.5, 10.5],
+          [
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 4][4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 4][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4][4 + oppPiece * 4].x,
+            initYPos,
+            BOARD_COORDS[4][4 + oppPiece * 4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 - oppPiece * 4][4].x,
+            initYPos,
+            BOARD_COORDS[4 - oppPiece * 4][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4][4 - oppPiece * 4].x,
+            initYPos,
+            BOARD_COORDS[4][4 - oppPiece * 4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+          ]
+        );
+
+        clip = new THREE.AnimationClip('Action', 11, [moves]);
+        break;
+      case KING_O.name:
+        moves = new THREE.VectorKeyframeTrack(
+          '.position',
+          [
+            0.5, 1.5, 2, 3, 3.5, 4.5, 5, 6, 6.5, 7.5, 8, 9, 9.5, 10.5, 11, 12,
+            12.5,
+          ],
+          [
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4 - oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4 - oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 + oppPiece * 1][4 + oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 + oppPiece * 1][4 + oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4][4 - oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4][4 - oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4][4 + oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4][4 + oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 - oppPiece * 1][4 - oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 - oppPiece * 1][4 - oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 - oppPiece * 1][4].x,
+            initYPos,
+            BOARD_COORDS[4 - oppPiece * 1][4].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+            BOARD_COORDS[4 - oppPiece * 1][4 + oppPiece * 1].x,
+            initYPos,
+            BOARD_COORDS[4 - oppPiece * 1][4 + oppPiece * 1].z,
+            BOARD_COORDS[4][4].x,
+            initYPos,
+            BOARD_COORDS[4][4].z,
+          ]
+        );
+
+        clip = new THREE.AnimationClip('Action', 13, [moves]);
+        break;
+      default:
+        break;
+    }
+
+    if (clip) {
+      mixer = new THREE.AnimationMixer(intersects[0].object);
+      mixer.addEventListener('finished', function (e) {
+        PIECES.forEach((element) => {
+          element.layers.set(0);
+        });
+      });
+
+      clipAction = mixer.clipAction(clip);
+      clipAction.setLoop(THREE.LoopOnce);
+      clipAction.play();
+    }
   }
 }
 
@@ -303,6 +637,11 @@ function animate() {
   requestAnimationFrame(animate);
 
   sky.rotation.y += 0.0015;
+
+  const delta = clock.getDelta();
+  if (mixer) {
+    mixer.update(delta);
+  }
 
   controls.update();
 
