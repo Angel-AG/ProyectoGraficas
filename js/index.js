@@ -31,14 +31,28 @@ import {
 } from './helperMatrix4.js';
 
 const SCALE_FACTOR = 0.25;
+const PIECE_SCALE_S = 1;
 const PIECE_SCALE_M = 1 + SCALE_FACTOR / 3;
 const PIECE_SCALE_L = 1 + (2 * SCALE_FACTOR) / 3;
 const PIECE_SCALE_XL = 1 + SCALE_FACTOR;
+
+const PAWN = 'pawn';
+const LANCE = 'lance';
+const KNIGHT = 'knight';
+const SILVER = 'silver';
+const GOLD = 'gold';
+const BISHOP = 'bishop';
+const ROOK = 'rook';
+const KING = 'king';
 
 let scene, camera, renderer, controls;
 let sky;
 let shogiBoard, shogiStandSente, shogiStandGote;
 let ambientLight, pointLight;
+let raycaster;
+let pointer;
+
+const PIECES = [];
 
 // X and Z coordinates for each square of the board
 const BOARD_XZ = [];
@@ -61,6 +75,9 @@ function init() {
     0.1,
     1500
   );
+
+  raycaster = new THREE.Raycaster();
+  pointer = new THREE.Vector2();
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -104,6 +121,7 @@ function init() {
   //
 
   window.addEventListener('resize', onWindowResize);
+  window.addEventListener('click', onClick);
 }
 
 function onWindowResize() {
@@ -111,6 +129,18 @@ function onWindowResize() {
   camera.updateProjectionMatrix();
 
   renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function onClick(event) {
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(pointer, camera);
+
+  const intersects = raycaster.intersectObjects(PIECES, false);
+  if (intersects.length > 0) {
+    console.log(intersects[0].object.name);
+  }
 }
 
 function addFloor() {
@@ -206,23 +236,27 @@ function addShogiBoard() {
   scene.add(shogiBoard);
 }
 
-function createShogiPiece(typeMat) {
+function createShogiPiece(typeName, typeMat, pieceSize) {
   const shogiPiece = new THREE.Mesh(SHOGI_PIECE_GEO, [typeMat, LIGHT_WOOD_MAT]);
   shogiPiece.applyMatrix4(
-    translateMatrix(
-      0,
-      SHOGI_PIECE_GEO.boundingBox.max.z +
-        SHOGI_BOARD_BOX_GEO.boundingBox.max.y -
-        SHOGI_BOARD_BOX_GEO.boundingBox.min.y +
-        SHOGI_BOARD_LEG_GEO.boundingBox.max.y -
-        SHOGI_BOARD_LEG_GEO.boundingBox.min.y +
-        1.5 * SHOGI_BOARD_BOT_GEO.boundingBox.max.y,
-      0
+    new THREE.Matrix4().multiplyMatrices(
+      translateMatrix(
+        0,
+        SHOGI_PIECE_GEO.boundingBox.max.z +
+          SHOGI_BOARD_BOX_GEO.boundingBox.max.y -
+          SHOGI_BOARD_BOX_GEO.boundingBox.min.y +
+          SHOGI_BOARD_LEG_GEO.boundingBox.max.y -
+          SHOGI_BOARD_LEG_GEO.boundingBox.min.y +
+          1.5 * SHOGI_BOARD_BOT_GEO.boundingBox.max.y,
+        0
+      ),
+      scaleMatrix(pieceSize, 1, pieceSize)
     )
   );
   shogiPiece.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
   shogiPiece.castShadow = true;
   shogiPiece.receiveShadow = true;
+  shogiPiece.name = typeName;
 
   return shogiPiece;
 }
@@ -231,7 +265,7 @@ function createShogiPiece(typeMat) {
 function addShogiPieces() {
   // Pawns
   for (let i = 0; i < 9; ++i) {
-    const shogiPiece = createShogiPiece(PAWN_MAT);
+    const shogiPiece = createShogiPiece(PAWN, PAWN_MAT, PIECE_SCALE_S);
     shogiPiece.position.set(
       BOARD_XZ[2][i].x,
       shogiPiece.position.y,
@@ -241,13 +275,13 @@ function addShogiPieces() {
     const shogiPieceOpp = shogiPiece.clone();
     shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
 
+    PIECES.push(shogiPiece, shogiPieceOpp);
     scene.add(shogiPiece);
     scene.add(shogiPieceOpp);
   }
 
   // Rook
-  let shogiPiece = createShogiPiece(ROOK_MAT);
-  shogiPiece.applyMatrix4(scaleMatrix(PIECE_SCALE_XL, 1, PIECE_SCALE_XL));
+  let shogiPiece = createShogiPiece(ROOK, ROOK_MAT, PIECE_SCALE_XL);
   shogiPiece.position.set(
     BOARD_XZ[1][7].x,
     shogiPiece.position.y,
@@ -257,12 +291,12 @@ function addShogiPieces() {
   let shogiPieceOpp = shogiPiece.clone();
   shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
 
+  PIECES.push(shogiPiece, shogiPieceOpp);
   scene.add(shogiPiece);
   scene.add(shogiPieceOpp);
 
   // Bishop
-  shogiPiece = createShogiPiece(BISHOP_MAT);
-  shogiPiece.applyMatrix4(scaleMatrix(PIECE_SCALE_XL, 1, PIECE_SCALE_XL));
+  shogiPiece = createShogiPiece(BISHOP, BISHOP_MAT, PIECE_SCALE_XL);
   shogiPiece.position.set(
     BOARD_XZ[1][1].x,
     shogiPiece.position.y,
@@ -272,13 +306,13 @@ function addShogiPieces() {
   shogiPieceOpp = shogiPiece.clone();
   shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
 
+  PIECES.push(shogiPiece, shogiPieceOpp);
   scene.add(shogiPiece);
   scene.add(shogiPieceOpp);
 
   // Lances
   for (let i = 0; i < 2; i++) {
-    shogiPiece = createShogiPiece(LANCE_MAT);
-    shogiPiece.applyMatrix4(scaleMatrix(PIECE_SCALE_M, 1, PIECE_SCALE_M));
+    shogiPiece = createShogiPiece(LANCE, LANCE_MAT, PIECE_SCALE_M);
     shogiPiece.position.set(
       BOARD_XZ[0][0 + i * 8].x,
       shogiPiece.position.y,
@@ -288,14 +322,14 @@ function addShogiPieces() {
     shogiPieceOpp = shogiPiece.clone();
     shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
 
+    PIECES.push(shogiPiece, shogiPieceOpp);
     scene.add(shogiPiece);
     scene.add(shogiPieceOpp);
   }
 
   // Knights
   for (let i = 0; i < 2; i++) {
-    shogiPiece = createShogiPiece(KNIGHT_MAT);
-    shogiPiece.applyMatrix4(scaleMatrix(PIECE_SCALE_M, 1, PIECE_SCALE_M));
+    shogiPiece = createShogiPiece(KNIGHT, KNIGHT_MAT, PIECE_SCALE_M);
     shogiPiece.position.set(
       BOARD_XZ[0][1 + i * 6].x,
       shogiPiece.position.y,
@@ -305,14 +339,14 @@ function addShogiPieces() {
     shogiPieceOpp = shogiPiece.clone();
     shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
 
+    PIECES.push(shogiPiece, shogiPieceOpp);
     scene.add(shogiPiece);
     scene.add(shogiPieceOpp);
   }
 
   // Silver
   for (let i = 0; i < 2; i++) {
-    shogiPiece = createShogiPiece(SILVER_MAT);
-    shogiPiece.applyMatrix4(scaleMatrix(PIECE_SCALE_L, 1, PIECE_SCALE_L));
+    shogiPiece = createShogiPiece(SILVER, SILVER_MAT, PIECE_SCALE_L);
     shogiPiece.position.set(
       BOARD_XZ[0][2 + i * 4].x,
       shogiPiece.position.y,
@@ -322,14 +356,14 @@ function addShogiPieces() {
     shogiPieceOpp = shogiPiece.clone();
     shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
 
+    PIECES.push(shogiPiece, shogiPieceOpp);
     scene.add(shogiPiece);
     scene.add(shogiPieceOpp);
   }
 
   // Gold
   for (let i = 0; i < 2; i++) {
-    shogiPiece = createShogiPiece(GOLD_MAT);
-    shogiPiece.applyMatrix4(scaleMatrix(PIECE_SCALE_L, 1, PIECE_SCALE_L));
+    shogiPiece = createShogiPiece(GOLD, GOLD_MAT, PIECE_SCALE_L);
     shogiPiece.position.set(
       BOARD_XZ[0][3 + i * 2].x,
       shogiPiece.position.y,
@@ -339,32 +373,28 @@ function addShogiPieces() {
     shogiPieceOpp = shogiPiece.clone();
     shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
 
+    PIECES.push(shogiPiece, shogiPieceOpp);
     scene.add(shogiPiece);
     scene.add(shogiPieceOpp);
   }
 
   // Kings
-  shogiPiece = createShogiPiece(KING_O_MAT);
-  shogiPiece.applyMatrix4(scaleMatrix(PIECE_SCALE_XL, 1, PIECE_SCALE_XL));
+  shogiPiece = createShogiPiece(KING, KING_O_MAT, PIECE_SCALE_XL);
   shogiPiece.position.set(
     BOARD_XZ[0][4].x,
     shogiPiece.position.y,
     BOARD_XZ[0][4].z
   );
 
-  shogiPieceOpp = createShogiPiece(KING_J_MAT);
-  shogiPieceOpp.applyMatrix4(
-    new THREE.Matrix4().multiplyMatrices(
-      reflectMatrix(-1, 1, -1),
-      scaleMatrix(PIECE_SCALE_XL, 1, PIECE_SCALE_XL)
-    )
-  );
+  shogiPieceOpp = createShogiPiece(KING, KING_J_MAT, PIECE_SCALE_XL);
+  shogiPieceOpp.applyMatrix4(reflectMatrix(-1, 1, -1));
   shogiPieceOpp.position.set(
     BOARD_XZ[8][4].x,
     shogiPieceOpp.position.y,
     BOARD_XZ[8][4].z
   );
 
+  PIECES.push(shogiPiece, shogiPieceOpp);
   scene.add(shogiPiece);
   scene.add(shogiPieceOpp);
 }
