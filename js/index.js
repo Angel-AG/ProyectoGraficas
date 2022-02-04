@@ -24,6 +24,7 @@ let ambientLight, pointLight;
 let raycaster, pointer;
 
 const PIECES = [];
+const introText = 'Click on a piece to learn its basic moves';
 
 init();
 animate();
@@ -47,6 +48,7 @@ function init() {
   renderer.shadowMap.enabled = true;
   renderer.antialias = true;
   document.body.appendChild(renderer.domElement);
+  document.getElementById('info').textContent = introText;
 
   controls = new OrbitControls(camera, renderer.domElement);
 
@@ -424,10 +426,13 @@ function onClick(event) {
     }
 
     if (clip) {
+      document.getElementById('info').textContent = intersects[0].object.name;
+
       mixer = new THREE.AnimationMixer(intersects[0].object);
       mixer.addEventListener('finished', function (e) {
         PIECES.forEach((element) => {
           element.layers.set(0);
+          document.getElementById('info').textContent = introText;
         });
       });
 
