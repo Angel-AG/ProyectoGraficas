@@ -1,3 +1,5 @@
+// Angel Guevara - https://github.com/Angel-AG/ProyectoGraficas
+
 import * as THREE from '../three/three.js';
 import { translateMatrix } from '../generics/helperMatrix4.js';
 import { DARK_WOOD_MAT, LIGHT_WOOD_MAT } from '../generics/materials.js';

@@ -1,3 +1,5 @@
+// Angel Guevara - https://github.com/Angel-AG/ProyectoGraficas
+
 import * as THREE from './three/three.js';
 import { OrbitControls } from './three/OrbitControls.js';
 import { createBoard, BOARD_COORDS } from './objects/board.js';
@@ -23,6 +25,7 @@ let shogiBoard, shogiStandSente, shogiStandGote;
 let ambientLight, pointLight;
 let raycaster, pointer;
 
+// Array to store all the pieces on the board
 const PIECES = [];
 const introText = 'Click on a piece to learn its basic moves';
 
@@ -30,27 +33,33 @@ init();
 animate();
 
 function init() {
+  // Scene
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x87ceeb);
+
+  // Camera
   camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
     0.1,
     1500
   );
+  camera.position.set(-60, 90, 80);
 
+  // Raycast to detect the click
   raycaster = new THREE.Raycaster();
   pointer = new THREE.Vector2();
 
+  // Renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.antialias = true;
+
+  // Add stuff to the doc
   document.body.appendChild(renderer.domElement);
   document.getElementById('info').textContent = introText;
-
-  controls = new OrbitControls(camera, renderer.domElement);
 
   // Lights
   ambientLight = new THREE.AmbientLight(0x909090);
@@ -63,6 +72,7 @@ function init() {
   scene.add(ambientLight);
   scene.add(pointLight);
 
+  // Add objects to scene
   addFloor();
   addSky();
   shogiBoard = createBoard();
@@ -70,9 +80,8 @@ function init() {
   addShogiStands();
   addShogiPieces();
 
+  controls = new OrbitControls(camera, renderer.domElement);
   clock = new THREE.Clock();
-
-  camera.position.set(-60, 90, 80);
 
   window.addEventListener('resize', onWindowResize);
   window.addEventListener('click', onClick);
@@ -85,6 +94,7 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+// Display the moveset of the piece clicked
 function onClick(event) {
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -93,12 +103,14 @@ function onClick(event) {
 
   const intersects = raycaster.intersectObjects(PIECES, false);
   if (intersects.length > 0) {
+    // Hide all pieces, but the one selected
     PIECES.forEach((element) => {
       if (element != intersects[0].object) {
         element.layers.set(1);
       }
     });
 
+    // Is the piece selected from the opposite side of the board?
     let oppPiece = 1;
     if (intersects[0].object.rotation.x < 0) {
       oppPiece = -1;
@@ -106,6 +118,7 @@ function onClick(event) {
 
     const initYPos = intersects[0].object.position.y;
     let moves, clip, clipAction;
+    // Set animations according to the piece selected
     switch (intersects[0].object.name) {
       case PAWN.name:
         moves = new THREE.VectorKeyframeTrack(
@@ -429,6 +442,7 @@ function onClick(event) {
       document.getElementById('info').textContent = intersects[0].object.name;
 
       mixer = new THREE.AnimationMixer(intersects[0].object);
+      // Unhide all pieces
       mixer.addEventListener('finished', function (e) {
         PIECES.forEach((element) => {
           element.layers.set(0);
@@ -469,6 +483,7 @@ function addSky() {
   scene.add(sky);
 }
 
+// Add pieces in their initial positions
 function addShogiPieces() {
   const board = shogiBoard.getObjectByName('top');
   const boardTop = board.position.y + board.geometry.boundingBox.max.y;
@@ -609,6 +624,7 @@ function addShogiPieces() {
   scene.add(shogiPieceOpp);
 }
 
+// Add stands next to the board
 function addShogiStands() {
   shogiStandSente = createStand();
   shogiStandGote = createStand();
@@ -643,6 +659,7 @@ function animate() {
 
   sky.rotation.y += 0.0015;
 
+  // Update animation
   const delta = clock.getDelta();
   if (mixer) {
     mixer.update(delta);

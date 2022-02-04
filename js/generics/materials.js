@@ -1,3 +1,5 @@
+// Angel Guevara - https://github.com/Angel-AG/ProyectoGraficas
+
 import * as THREE from '../three/three.js';
 
 const loader = new THREE.TextureLoader();
