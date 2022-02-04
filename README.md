@@ -13,6 +13,10 @@ La escena retrata una partida de shōgi (_ajedrez japonés_). Por lo tanto en el
 
 El entorno de la escena es abierto, en pasto, y soleado. La parte de animación e interactiva corresponde a hacer clic en una pieza para iniciar una demostración de los movimientos básicos de dicha pieza.
 
+## Demo
+
 ### [Clic aquí para probar la demo](https://angel-ag.github.io/ProyectoGraficas/)
 
-**Modelos y texturas hechos por mí.**
+![Shogi board with pieces](shogi_demo.png)
+
+### **Modelos y texturas hechos por mí.**
